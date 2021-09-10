@@ -16,6 +16,3 @@ const userSchema = new Schema({
 });
 
 export default mongoose.model('User', userSchema);
-
-ATLAS_URI=mongodb+srv://narantsatsralt:Naran_20021205@cluster0.bdqd1.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
-PORT=5000
