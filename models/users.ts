@@ -1,7 +1,7 @@
 //Users.js
 import mongoose, { Schema } from 'mongoose';
 
-// const isEmail = require('validator');
+// import isEmail from 'validator';
 
 const userSchema = new Schema({
   username: { type: String, required: true, unique: true },
@@ -15,4 +15,4 @@ const userSchema = new Schema({
   lastLogin: { type: Date },
 });
 
-export default mongoose.model('User', userSchema);
+export const userModel =  mongoose.model('User', userSchema);

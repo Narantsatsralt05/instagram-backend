@@ -1,7 +1,7 @@
-import express from 'express';
+import express, { request, response } from 'express';
 import cors  from 'cors';
 import mongoose from 'mongoose';
-import userModel from'./models/users';
+import {userModel, postModel} from'./models';
 
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -26,6 +26,7 @@ const connectDb = async () => {
 connectDb();
 
 app.get('/users', async (request, response) => {
+
   const users = await userModel.find({});
   try {
     response.send(users);
@@ -33,8 +34,32 @@ app.get('/users', async (request, response) => {
     response.status(500).send(error);
   }
 });
+
+app.post('/post', async (request, response) => {
+
+  const post = new postModel(request.body);
+
+  try {
+    await post.save();
+    response.send(post);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+})
+
+app.get('/posts', async (request, response) => {
+
+  const posts = await postModel.find({});
+
+  try {
+    response.send(posts);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+})
+
 app.post('/user', async (request, response) => {
-  console.log(request.body)
+
   const user = new userModel(request.body);
   
   try {
