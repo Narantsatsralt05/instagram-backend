@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import { userModel } from './models';
 import authController from "./controllers/auth";
 import postController from './controllers/post';
 import * as dotenv from 'dotenv';
+import { userModel } from './models';
 
 dotenv.config();
 
@@ -16,7 +16,6 @@ app.use(cors());
 app.use(express.json());
 app.use(authController);
 app.use(postController);
-console.log(authController);
 
 const connectDb = async () => {
   try {

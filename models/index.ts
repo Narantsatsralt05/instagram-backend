@@ -1,2 +1,3 @@
 export * from './post';
-export * from './users';
+export * from './user';
+export * from './confirmation_tkn';
