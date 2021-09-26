@@ -29,16 +29,22 @@ const userSchema = new Schema({
   lastLogin: { type: Date },
 
 });
-// userSchema.pre('save', (next) => {
-//   const saltRounds = 10;
-//   // password oorchlogdson esehiig shalgah
-//   if (this.modifiedPaths)
-//   bcrypt.genSalt(saltRounds, (err, salt) => {
-//     if (err) return next(err);
-//     bcrypt.hash()
-//   })
-
-// })
+userSchema.pre('save', function (next) {
+  const saltRounds = 10;
+  // Check if the password has been modified
+  if (this.modifiedPaths().includes('password')) {
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+      if (err) return next(err);
+      bcrypt.hash(this.password, salt, (err, hash) => {
+        if (err) return next(err);
+        this.password = hash;
+        next();
+      });
+    });
+  } else {
+    next();
+  }
+});
 
 
 export const userModel =  mongoose.model('User', userSchema);

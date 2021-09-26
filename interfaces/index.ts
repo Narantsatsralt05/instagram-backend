@@ -6,8 +6,8 @@ export interface typeOfReqRes {
 }
 
 export interface typeOfUser {
-    username: String,
-    fullName: String,
-    password: String,
-    email: String,
+    username: string,
+    fullName: string,
+    password: string,
+    email: string,
 }

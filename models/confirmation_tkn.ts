@@ -1,6 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
 
-
 const confirmationTokenSchema = new Schema({
     user: {
         type: Schema.Types.ObjectId,
