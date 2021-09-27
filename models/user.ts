@@ -2,10 +2,11 @@
 import mongoose, { Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import validator from 'validator';
+import { typeOfUser } from '../interfaces';
 
 // import isEmail from 'validator';
 
-const userSchema = new Schema({
+const userSchema = new Schema<typeOfUser>({
   username: { type: String, required: true, unique: true },
   email: {
     type: String,
@@ -25,7 +26,7 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  createdAt: { type: Date, default: Date.now },
+  // createdAt: { type: Date, default: Date.now },
   lastLogin: { type: Date },
 
 });
@@ -47,4 +48,4 @@ userSchema.pre('save', function (next) {
 });
 
 
-export const userModel =  mongoose.model('User', userSchema);
+export const User =  mongoose.model('User', userSchema);

@@ -1,7 +1,7 @@
 import express, {Request, Response} from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import { ConfirmationTokenModel, userModel } from '../models';
+import { ConfirmationTokenModel, User } from '../models';
 import jwt from 'jwt-simple';
 import * as dotenv from 'dotenv';
 import { typeOfUser } from '../interfaces';
@@ -17,7 +17,7 @@ app.post('/register', async (req: Request, res: Response, next) => {
   let confirmationToken = null;
 
   try {
-    user = new userModel({ username, fullName, password, email });
+    user = new User({ username, fullName, password, email });
     confirmationToken = new ConfirmationTokenModel({
       user: user._id,
       token: crypto.randomBytes(20).toString('hex'),
@@ -34,10 +34,10 @@ app.post('/register', async (req: Request, res: Response, next) => {
 });
 
 app.post('/login', async (req: Request, res: Response, next) => {
-  console.log(req.header);
+  // console.log(req.headers);
   console.log('orj irleee')
   // const { authorization } = req.header;
-  const { username, email, password }: typeOfUser = req.body;
+  const { username, email, password } = req.body;
 
   if (!email || !password) {
     return res
@@ -46,38 +46,40 @@ app.post('/login', async (req: Request, res: Response, next) => {
   }
 
   try {
-    const user = await userModel.findOne({
+    const user = await User.findOne({
       $or: [{ username: username }, { email: email }],
     });
     console.log(user);
+    
+    if (!user || !user.password) {
+      return res.status(401).send({
+        error: 'The credentials you provided are incorrect, please try again.',
+      });
+    }
+    bcrypt.compare(password, user.password, (err, result) => {
+      if (err) {
+        return next(err);
+      }
+      if (!result) {
+        return res.status(401).send({
+          error:
+            'The credentials you provided are incorrect, please try again.',
+        });
+      }
+      console.log('sent')
+      res.send({
+        user: {
+          _id: user._id,
+          email: user.email,
+          username: user.username,
+        },
+        token: jwt.encode({ id: user._id }, jwtSecret),
+      });
+    });
   }
-  //   if (!user || !user.password) {
-  //     return res.status(401).send({
-  //       error: 'The credentials you provided are incorrect, please try again.',
-  //     });
-  //   }
+    
 
-  //   bcrypt.compare(password, user.password, (err, result) => {
-  //     if (err) {
-  //       return next(err);
-  //     }
-  //     if (!result) {
-  //       return res.status(401).send({
-  //         error:
-  //           'The credentials you provided are incorrect, please try again.',
-  //       });
-  //     }
-
-  //     res.send({
-  //       user: {
-  //         _id: user._id,
-  //         email: user.email,
-  //         username: user.username,
-  //         avatar: user.avatar,
-  //       },
-  //       token: jwt.encode({ id: user._id }, jwtSecret),
-  //     });
-  //   });
+   
   catch (err) {
     next(err);
   }

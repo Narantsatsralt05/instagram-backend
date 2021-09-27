@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Date } from 'mongoose';
 
 export interface typeOfReqRes {
     request: Request;
@@ -10,4 +11,5 @@ export interface typeOfUser {
     fullName: string,
     password: string,
     email: string,
+    lastLogin?: Date,
 }
