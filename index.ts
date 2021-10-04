@@ -1,10 +1,9 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import authController from "./controllers/auth";
-import postController from './controllers/post';
+import authController from "./controllers/auth_controller";
+import postController from './controllers/post_controller';
 import * as dotenv from 'dotenv';
-import { userModel } from './models';
 
 dotenv.config();
 
@@ -25,18 +24,7 @@ const connectDb = async () => {
     console.log("Er: ", err)
   }
 }
-
 connectDb();
-
-app.get('/users', async (req: Request, res: Response) => {
-
-  const users = await userModel.find({});
-  try {
-    res.send(users);
-  } catch (error) {
-    res.status(500).send(error);
-  }
-});
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');

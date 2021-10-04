@@ -1,12 +1,6 @@
-import { Request, Response } from 'express';
 import { Date } from 'mongoose';
 
-export interface typeOfReqRes {
-    request: Request;
-    response: Response;
-}
-
-export interface typeOfUser {
+export interface IUser {
     username: string,
     fullName: string,
     password: string,

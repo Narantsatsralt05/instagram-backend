@@ -1,15 +1,16 @@
 import express, {Request, Response} from 'express';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
-import { ConfirmationTokenModel, User } from '../models';
 import jwt from 'jwt-simple';
 import * as dotenv from 'dotenv';
-import { typeOfUser } from '../interfaces';
+import { ConfirmationTokenModel, User } from '../models';
+
 
 const app = express();
 dotenv.config();
 
 const jwtSecret = process.env.JWT_SECRET || "";
+const saltRounds = Number(process.env.SALT_ROUNDS);
 
 app.post('/register', async (req: Request, res: Response, next) => {
   const { username, fullName, password, email} = req.body;
@@ -17,16 +18,32 @@ app.post('/register', async (req: Request, res: Response, next) => {
   let confirmationToken = null;
 
   try {
-    user = new User({ username, fullName, password, email });
-    confirmationToken = new ConfirmationTokenModel({
-      user: user._id,
-      token: crypto.randomBytes(20).toString('hex'),
+    bcrypt.genSalt(saltRounds, (saltError, salt) => {
+
+      if (saltError) {
+        throw saltError;
+      } else {
+        bcrypt.hash(password, salt, async (hashError, hash) => {
+    
+          if (hashError) {
+            throw hashError;
+          } else {
+            user = new User({ username, fullName, "password":hash, email });
+
+            confirmationToken = new ConfirmationTokenModel({
+              user: user._id,
+              token: crypto.randomBytes(20).toString('hex'),
+            });
+        
+            await user.save();
+            await confirmationToken.save();
+        
+            res.status(201).send({user,token: jwt.encode({id: user._id }, jwtSecret)})
+          }
+        })
+      }
     });
-
-    await user.save();
-    await confirmationToken.save();
-
-    res.status(201).send({user,token: jwt.encode({id: user._id }, jwtSecret)})
+    
   } catch (error) {
     res.status(500).send(error);
     next(error);
@@ -34,9 +51,7 @@ app.post('/register', async (req: Request, res: Response, next) => {
 });
 
 app.post('/login', async (req: Request, res: Response, next) => {
-  // console.log(req.headers);
-  console.log('orj irleee')
-  // const { authorization } = req.header;
+  
   const { username, email, password } = req.body;
 
   if (!email || !password) {
@@ -46,7 +61,7 @@ app.post('/login', async (req: Request, res: Response, next) => {
   }
 
   try {
-    const user = await User.findOne({
+    let user = await User.findOne({
       $or: [{ username: username }, { email: email }],
     });
     console.log(user);
@@ -56,31 +71,11 @@ app.post('/login', async (req: Request, res: Response, next) => {
         error: 'The credentials you provided are incorrect, please try again.',
       });
     }
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) {
-        return next(err);
-      }
-      if (!result) {
-        return res.status(401).send({
-          error:
-            'The credentials you provided are incorrect, please try again.',
-        });
-      }
-      console.log('sent')
-      res.send({
-        user: {
-          _id: user._id,
-          email: user.email,
-          username: user.username,
-        },
-        token: jwt.encode({ id: user._id }, jwtSecret),
-      });
-    });
-  }
     
-
-   
-  catch (err) {
+    const check = await bcrypt.compare(password, user.password);
+    console.log(user)
+    if(check) res.json(user)
+  } catch (err) {
     next(err);
   }
 });
